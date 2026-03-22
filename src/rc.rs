@@ -36,11 +36,7 @@ pub(crate) trait RefCount {
 impl RefCount for Cell<usize> {
     fn incr(&self) {
         let count = self.get();
-        #[cfg(feature = "no_std")]
-        use core::usize::MAX;
-        #[cfg(not(feature = "no_std"))]
-        use std::usize::MAX;
-        if count == 0 || count == MAX {
+        if count == 0 || count == usize::MAX {
             panic!();
         } else {
             self.set(count + 1);
@@ -128,7 +124,7 @@ impl<T> Clone for RcNode<T> {
                     let node = node_vec.as_ref().buf.get_unchecked(*index);
                     node.count.incr();
                 }
-                RcNode::Piled(PiledRcNode(node_vec.clone(), *index))
+                RcNode::Piled(PiledRcNode(*node_vec, *index))
             }
         }
     }
@@ -139,27 +135,26 @@ impl<T> Drop for RcNode<T> {
         let mut drop_piled = false;
         match self {
             RcNode::Scattered(ScatteredRcNode(rc)) => {
-                if Rc::strong_count(&rc) == 1 {
-                    while let Some(_) = self.pop_front() {}
+                if Rc::strong_count(rc) == 1 {
+                    while self.pop_front().is_some() {}
                 }
             }
             RcNode::Piled(PiledRcNode(node_vec, index)) => unsafe {
                 let node = node_vec.as_ref().buf.get_unchecked(*index);
                 if node.count.decr() == 0 {
                     drop_piled = true;
-                    while let Some(_) = self.pop_front() {}
+                    while self.pop_front().is_some() {}
                 }
             },
         }
-        match self {
-            RcNode::Piled(PiledRcNode(node_vec, index)) => unsafe {
+        if let RcNode::Piled(PiledRcNode(node_vec, index)) = self {
+            unsafe {
                 if drop_piled {
                     let node = node_vec.as_mut().buf.get_unchecked_mut(*index);
                     ptr::drop_in_place(&mut node.data);
                 }
                 NodeVec::decr_ref(*node_vec);
-            },
-            _ => (),
+            }
         }
     }
 }
@@ -181,31 +176,31 @@ impl<T> RcNode<T> {
     }
 
     /// Dynamically borrows the node's data.
-    pub fn data(&self) -> Ref<T> {
+    pub fn data(&self) -> Ref<'_, T> {
         Ref::map(self.node_borrow(), |node| node.data())
     }
 
     /// Mutably borrows the node's data.
-    pub fn data_mut(&self) -> RefMut<T> {
+    pub fn data_mut(&self) -> RefMut<'_, T> {
         RefMut::map(self.node_borrow_mut(), |node| node.data_mut())
     }
 
     /// Obtains a node reference
-    pub unsafe fn node(&self) -> Ref<Node<T>> {
+    pub unsafe fn node(&self) -> Ref<'_, Node<T>> {
         self.node_borrow()
     }
 
     /// Obtains a mutable node reference
-    pub unsafe fn node_mut(&self) -> RefMut<Node<T>> {
+    pub unsafe fn node_mut(&self) -> RefMut<'_, Node<T>> {
         self.node_borrow_mut()
     }
 
-    pub(crate) fn node_borrow(&self) -> Ref<Node<T>> {
+    pub(crate) fn node_borrow(&self) -> Ref<'_, Node<T>> {
         match self {
             RcNode::Scattered(ScatteredRcNode(rc)) => {
                 let borrowed = rc.deref().borrow();
                 assert!(!borrowed.data.is_none());
-                unsafe { transmute(borrowed) }
+                borrowed
             }
             RcNode::Piled(PiledRcNode(node_vec, index)) => {
                 let borrowed =
@@ -216,12 +211,12 @@ impl<T> RcNode<T> {
         }
     }
 
-    pub(crate) fn node_borrow_mut(&self) -> RefMut<Node<T>> {
+    pub(crate) fn node_borrow_mut(&self) -> RefMut<'_, Node<T>> {
         match self {
             RcNode::Scattered(ScatteredRcNode(rc)) => {
                 let borrowed = rc.deref().borrow_mut();
                 assert!(!borrowed.data.is_none());
-                unsafe { transmute(borrowed) }
+                borrowed
             }
             RcNode::Piled(PiledRcNode(node_vec, index)) => {
                 let borrowed = unsafe {
@@ -378,9 +373,7 @@ impl<T> RcNode<T> {
     /// assert_eq!( root.to_string(), "0" );
     /// ```
     pub fn pop_front(&self) -> Option<RcNode<T>> {
-        self.node_borrow_mut()
-            .pop_front()
-            .map(|tree| RcNode::from(tree))
+        self.node_borrow_mut().pop_front().map(RcNode::from)
     }
 
     /// Removes and return the last child.
@@ -399,9 +392,7 @@ impl<T> RcNode<T> {
     /// assert_eq!( root.to_string(), "0" );
     /// ```
     pub fn pop_back(&self) -> Option<RcNode<T>> {
-        self.node_borrow_mut()
-            .pop_back()
-            .map(|tree| RcNode::from(tree))
+        self.node_borrow_mut().pop_back().map(RcNode::from)
     }
 
     /// Adds all the forest's trees at front of children list.
@@ -513,7 +504,7 @@ impl<T> RcNode<T> {
     pub fn downgrade(&self) -> WeakNode<T> {
         match self {
             RcNode::Scattered(ScatteredRcNode(rc)) => {
-                WeakNode::Scattered(ScatteredWeakNode(Rc::downgrade(&rc)))
+                WeakNode::Scattered(ScatteredWeakNode(Rc::downgrade(rc)))
             }
             RcNode::Piled(PiledRcNode(node_vec, index)) => {
                 WeakNode::Piled(PiledWeakNode(*node_vec, *index))

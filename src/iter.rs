@@ -4,7 +4,7 @@ use crate::rust::*;
 
 use super::Node;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub(crate) struct UncountedRawIter<T> {
     curr: Option<NonNull<Node<T>>>,
 }
@@ -12,16 +12,6 @@ pub(crate) struct UncountedRawIter<T> {
 impl<T> UncountedRawIter<T> {
     pub(crate) fn new(curr: Option<NonNull<Node<T>>>) -> UncountedRawIter<T> {
         UncountedRawIter { curr }
-    }
-}
-
-impl<T> Copy for UncountedRawIter<T> {}
-
-impl<T> Clone for UncountedRawIter<T> {
-    fn clone(&self) -> Self {
-        UncountedRawIter {
-            curr: self.curr.clone(),
-        }
     }
 }
 
@@ -37,7 +27,7 @@ impl<T> Iterator for UncountedRawIter<T> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub(crate) struct CountedRawIter<T> {
     iter: UncountedRawIter<T>,
     len:  usize,
@@ -56,26 +46,15 @@ impl<T> CountedRawIter<T> {
     }
 }
 
-impl<T> Copy for CountedRawIter<T> {}
-
-impl<T> Clone for CountedRawIter<T> {
-    fn clone(&self) -> Self {
-        CountedRawIter {
-            iter: self.iter.clone(),
-            len:  self.len,
-        }
-    }
-}
-
 impl<T> Iterator for CountedRawIter<T> {
     type Item = NonNull<Node<T>>;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.len == 0 {
-            return None;
+            None
         } else {
             self.len -= 1;
-            return self.iter.next();
+            self.iter.next()
         }
     }
 

@@ -9,8 +9,9 @@ use crate::rust::*;
 use super::{Forest, Iter, IterMut, NodeVec, Tree};
 
 /// Data associated with `Node`.
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Data<T> {
+    #[default]
     None,
     ScatteredNone {
         owner: NonNull<RefCell<Node<T>>>,
@@ -28,18 +29,9 @@ pub enum Data<T> {
     },
 }
 
-impl<T> Default for Data<T> {
-    fn default() -> Self {
-        Data::None
-    }
-}
-
 impl<T> Data<T> {
     pub(crate) fn is_none(&self) -> bool {
-        match self {
-            Data::None => true,
-            _ => false,
-        }
+        matches!(self, Data::None)
     }
 
     pub(crate) fn take(&mut self) -> T {
@@ -236,22 +228,22 @@ impl<T> Node<T> {
 
     /// Returns a reference to the next sibling of this node.
     pub fn next(&self) -> &Option<NonNull<Node<T>>> {
-        return &self.next;
+        &self.next
     }
 
     /// Returns a reference to the previous sibling of this node.
     pub fn prev(&self) -> &Option<NonNull<Node<T>>> {
-        return &self.prev;
+        &self.prev
     }
 
     /// Returns a mutable reference to the next sibling of this node.
     pub fn next_mut(&mut self) -> &mut Option<NonNull<Node<T>>> {
-        return &mut self.next;
+        &mut self.next
     }
 
     /// Returns a mutable reference to the previous sibling of this node.
     pub fn prev_mut(&mut self) -> &mut Option<NonNull<Node<T>>> {
-        return &mut self.prev;
+        &mut self.prev
     }
 
     /// Inserts sib tree before `self`.
@@ -682,11 +674,10 @@ impl<T> Node<T> {
     }
 
     pub(crate) fn is_forest(&self) -> bool {
-        match self.data {
-            Data::PiledNone { .. } => true,
-            Data::ScatteredNone { .. } => true,
-            _ => false,
-        }
+        matches!(
+            self.data,
+            Data::PiledNone { .. } | Data::ScatteredNone { .. }
+        )
     }
 }
 

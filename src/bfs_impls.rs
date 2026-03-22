@@ -75,7 +75,7 @@ impl<T> Node<T> {
     ///     .collect::<Vec<_>>();
     /// assert_eq!( visits, vec![ (1, 2, 2), (4, 2, 2), (2, 0, 0), (3, 0, 0), (5, 0, 0), (6, 0, 0), ]);
     /// ```
-    pub fn bfs_children(&self) -> BfsForest<Splitted<Iter<T>>> {
+    pub fn bfs_children(&self) -> BfsForest<Splitted<Iter<'_, T>>> {
         BfsForest::from(self.iter(), self.size)
     }
 
@@ -94,7 +94,7 @@ impl<T> Node<T> {
     ///     .for_each( |(visit,nth)| *visit.data += 10 * nth );
     /// assert_eq!( tree, Tree::<i32>::from_tuple(( 0, (11,32,43), (24,55,66), )));
     /// ```
-    pub fn bfs_children_mut(&mut self) -> BfsForest<Splitted<IterMut<T>>> {
+    pub fn bfs_children_mut(&mut self) -> BfsForest<Splitted<IterMut<'_, T>>> {
         let size = self.size;
         BfsForest::from(self.iter_mut(), size)
     }
@@ -112,9 +112,9 @@ impl<T> Node<T> {
     ///     .collect::<Vec<_>>();
     /// assert_eq!( visits, vec![ (0, 2, 6), (1, 2, 2), (4, 2, 2), (2, 0, 0), (3, 0, 0), (5, 0, 0), (6, 0, 0), ]);
     /// ```
-    pub fn bfs(&self) -> BfsTree<Splitted<Iter<T>>> {
+    pub fn bfs(&self) -> BfsTree<Splitted<Iter<'_, T>>> {
         BfsTree::from(
-            self.into_iter(),
+            self,
             Size {
                 degree:      1,
                 descendants: self.size.descendants,
@@ -137,7 +137,7 @@ impl<T> Node<T> {
     ///     .for_each( |(visit,nth)| *visit.data += 10 * nth );
     /// assert_eq!( tree, Tree::<i32>::from_tuple(( 10, (21,42,53), (34,65,76), )));
     /// ```
-    pub fn bfs_mut(&mut self) -> BfsTree<Splitted<IterMut<T>>> {
+    pub fn bfs_mut(&mut self) -> BfsTree<Splitted<IterMut<'_, T>>> {
         let size = Size {
             degree:      1,
             descendants: self.size.descendants,
@@ -184,7 +184,7 @@ impl<T> Forest<T> {
     ///     .collect::<Vec<_>>();
     /// assert_eq!( visits, vec![ (1, 2, 2), (4, 2, 2), (2, 0, 0), (3, 0, 0), (5, 0, 0), (6, 0, 0), ]);
     /// ```
-    pub fn bfs(&self) -> BfsForest<Splitted<Iter<T>>> {
+    pub fn bfs(&self) -> BfsForest<Splitted<Iter<'_, T>>> {
         BfsForest::from(self.iter(), self.root_().size)
     }
 
@@ -202,7 +202,7 @@ impl<T> Forest<T> {
     ///     .for_each( |(visit,nth)| *visit.data += 10 * nth );
     /// assert_eq!( forest, Forest::from_tuple(( (1,(22,),(33,)), (14,(45,),(56,)), )));
     /// ```
-    pub fn bfs_mut(&mut self) -> BfsForest<Splitted<IterMut<T>>> {
+    pub fn bfs_mut(&mut self) -> BfsForest<Splitted<IterMut<'_, T>>> {
         let size = self.root_().size;
         BfsForest::from(self.iter_mut(), size)
     }
@@ -232,7 +232,7 @@ impl<T> Forest<T> {
     /// ```
     pub fn into_bfs(self: Forest<T>) -> BfsForest<Splitted<IntoIter<T>>> {
         let size = self.root_().size;
-        BfsForest::from(self.into_iter(), size)
+        BfsForest::from(self, size)
     }
 }
 
@@ -251,7 +251,7 @@ impl<T> Tree<T> {
     ///     .for_each( |(visit,nth)| *visit.data += 10 * nth );
     /// assert_eq!( tree, Tree::<i32>::from_tuple(( 0, (11,32,43), (24,55,66), )));
     /// ```
-    pub fn bfs_children_mut(&mut self) -> BfsForest<Splitted<IterMut<T>>> {
+    pub fn bfs_children_mut(&mut self) -> BfsForest<Splitted<IterMut<'_, T>>> {
         self.root_mut_().bfs_children_mut()
     }
 
@@ -269,7 +269,7 @@ impl<T> Tree<T> {
     ///     .for_each( |(visit,nth)| *visit.data += 10 * nth );
     /// assert_eq!( tree, Tree::<i32>::from_tuple(( 10, (21,42,53), (34,65,76), )));
     /// ```
-    pub fn bfs_mut(&mut self) -> BfsTree<Splitted<IterMut<T>>> {
+    pub fn bfs_mut(&mut self) -> BfsTree<Splitted<IterMut<'_, T>>> {
         self.root_mut_().bfs_mut()
     }
 

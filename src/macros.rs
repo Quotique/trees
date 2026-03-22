@@ -51,7 +51,6 @@ macro_rules! impl_order_relations_for_collection {
     ( $ty:ident, $($agent:tt)+ ) => {
         impl<T:PartialEq> PartialEq for $ty<T> {
             fn eq( &self, other: &Self ) -> bool { self.$($agent)+.eq( other.$($agent)+ )}
-            fn ne( &self, other: &Self ) -> bool { self.$($agent)+.ne( other.$($agent)+ )}
         }
 
         impl<T:Eq> Eq for $ty<T> {}
@@ -132,7 +131,6 @@ macro_rules! impl_order_relations_for_node {
     ( $ty:ident, $iter:ident, $($data:tt)+ ) => {
         impl<T:PartialEq> PartialEq for $ty<T> {
             fn eq( &self, other: &Self ) -> bool { self.$($data)+ == other.$($data)+ && self.$iter().eq( other.$iter() )}
-            fn ne( &self, other: &Self ) -> bool { self.$($data)+ != other.$($data)+ || self.$iter().ne( other.$iter() )}
         }
 
         impl<T:Eq> Eq for $ty<T> {}

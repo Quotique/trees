@@ -1,10 +1,10 @@
 //! Composed of a root `Node` and a list of its child `Node`s.
 //!
 //! 1. Support adding and storing nodes only once on tree creation, in a
-//! contiguous memory address.
+//!    contiguous memory address.
 //!
 //! 2. Support adding and storing nodes one by one, in scattered memory
-//! allocations.
+//!    allocations.
 //!
 //! 3. Tuple notations for construction.
 //!
@@ -270,7 +270,7 @@ impl<T> Deref for Tree<T> {
 
 impl<T> Drop for Tree<T> {
     fn drop(&mut self) {
-        while let Some(_) = self.root_mut_().pop_front() {}
+        while self.root_mut_().pop_front().is_some() {}
         heap::drop_node(self.root);
     }
 }

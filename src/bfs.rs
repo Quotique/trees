@@ -27,7 +27,7 @@ where
     {
         Self {
             iter: Splitted::<Iter>::from(treelike),
-            size: size,
+            size,
         }
     }
 }
@@ -82,7 +82,7 @@ where
     {
         Self {
             iter: Splitted::<Iter>::from(treelike),
-            size: size,
+            size,
         }
     }
 }

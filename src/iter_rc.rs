@@ -10,6 +10,7 @@ use super::{CountedRawIter, Node, RcNode};
 /// See its document for more.
 ///
 /// [`RcNode::iter_rc`]: ../rc/enum.RcNode.html#method.iter_rc
+#[derive(Clone)]
 pub struct IterRc<T> {
     iter: CountedRawIter<T>,
     mark: PhantomData<RcNode<T>>,
@@ -33,11 +34,5 @@ impl<T> IterRc<T> {
             iter: CountedRawIter::new(curr, len),
             mark: PhantomData,
         }
-    }
-}
-
-impl<T> Clone for IterRc<T> {
-    fn clone(&self) -> Self {
-        IterRc { ..*self }
     }
 }

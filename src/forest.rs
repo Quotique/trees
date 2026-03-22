@@ -1,10 +1,10 @@
 //! Composed of a list of `Node`s as its children.
 //!
 //! 1. Support adding and storing nodes only once on tree creation, in a
-//! contiguous memory address.
+//!    contiguous memory address.
 //!
 //! 2. Support adding and storing nodes one by one, in scattered memory
-//! allocations.
+//!    allocations.
 //!
 //! 3. Tuple notations for construction.
 //!
@@ -299,7 +299,7 @@ impl<T> Default for Forest<T> {
 
 impl<T> Drop for Forest<T> {
     fn drop(&mut self) {
-        while let Some(_) = self.pop_front() {}
+        while self.pop_front().is_some() {}
         heap::drop_node(self.root);
     }
 }

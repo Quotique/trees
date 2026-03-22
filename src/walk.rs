@@ -112,9 +112,8 @@ impl<T> Walk<T> {
 
     fn revisit(&mut self) {
         if self.origin.is_some() {
-            match self.visit_type {
-                VisitType::None => self.path.push(Nodes::sibs(self.origin)),
-                _ => (),
+            if let VisitType::None = self.visit_type {
+                self.path.push(Nodes::sibs(self.origin))
             }
             self.direction = Direction::Down;
             self.init_visit();
@@ -123,7 +122,7 @@ impl<T> Walk<T> {
 
     /// Returns the current node in the traversal, or `None` if the traversal is
     /// completed.
-    fn get(&self) -> Option<Visit<T>> {
+    fn get(&self) -> Option<Visit<'_, T>> {
         if let Some(nodes) = self.path.last() {
             unsafe {
                 match self.visit_type {
@@ -172,7 +171,7 @@ impl<T> Walk<T> {
                     } else {
                         break;
                     }
-                    new_nodes.map(|nodes| self.path.push(nodes));
+                    self.path.extend(new_nodes);
                     break;
                 }
                 Direction::Right => {
@@ -200,14 +199,14 @@ impl<T> Walk<T> {
     ///
     /// NOTICE: the FIRST node in the traversal can NOT be accessed via next()
     /// call.
-    fn next(&mut self) -> Option<Visit<T>> {
+    fn next(&mut self) -> Option<Visit<'_, T>> {
         self.forward();
         self.get()
     }
 
     /// Sets the cursor to the current node's parent and returns it, or `None`
     /// if it has no parent.
-    fn to_parent(&mut self) -> Option<Visit<T>> {
+    fn to_parent(&mut self) -> Option<Visit<'_, T>> {
         if self.path.last().is_some() {
             self.path.pop();
             if self.path.last().is_some() {
@@ -235,7 +234,7 @@ impl<T> Walk<T> {
     /// Sets the cursor to the current node's next `n`-th sibling and returns
     /// it, or `None` if such sibling does not exist. Returns the current
     /// node if n == 0.
-    fn to_sib(&mut self, n: usize) -> Option<Visit<T>> {
+    fn to_sib(&mut self, n: usize) -> Option<Visit<'_, T>> {
         if let Some(nodes) = self.path.last_mut() {
             for _ in 0..n {
                 nodes.node = unsafe { nodes.node.unwrap().as_ref().next };
@@ -253,13 +252,13 @@ impl<T> Walk<T> {
         } else {
             return None;
         }
-        return self.get();
+        self.get()
     }
 
     /// Sets the cursor to the current node's `n`-th child and returns it, or
     /// `None` if it has no child. Notice that `n == 0` indicating the first
     /// child.
-    fn to_child(&mut self, n: usize) -> Option<Visit<T>> {
+    fn to_child(&mut self, n: usize) -> Option<Visit<'_, T>> {
         let new_nodes;
         if let Some(nodes) = self.path.last_mut() {
             unsafe {
@@ -280,7 +279,7 @@ impl<T> Walk<T> {
         } else {
             return None;
         }
-        new_nodes.map(|nodes| self.path.push(nodes));
+        self.path.extend(new_nodes);
         self.to_sib(n)
     }
 }
@@ -332,7 +331,7 @@ impl<'tree, T> TreeWalk<'tree, T> {
     /// let walk = TreeWalk::new( &tree );
     /// assert_eq!( walk.get(), Some( Visit::Begin( ( tr(0)/tr(1)/tr(2)/tr(3) ).root() )));
     /// ```
-    pub fn get(&self) -> Option<Visit<T>> {
+    pub fn get(&self) -> Option<Visit<'_, T>> {
         self.walk.get()
     }
 
@@ -391,7 +390,7 @@ impl<'tree, T> TreeWalk<'tree, T> {
     /// assert_eq!( walk.next(), None );
     /// assert_eq!( walk.next(), None );
     /// ```
-    pub fn next(&mut self) -> Option<Visit<T>> {
+    pub fn next(&mut self) -> Option<Visit<'_, T>> {
         self.walk.next()
     }
 
@@ -409,7 +408,7 @@ impl<'tree, T> TreeWalk<'tree, T> {
     /// assert_eq!( walk.get(), Some( Visit::Begin( (tr(1)/tr(2)/tr(3)).root() )));
     /// assert_eq!( walk.to_parent(), Some( Visit::End( ( tr(0) /( tr(1)/tr(2)/tr(3) ) /( tr(4)/tr(5)/tr(6) ) ).root() )));
     /// ```
-    pub fn to_parent(&mut self) -> Option<Visit<T>> {
+    pub fn to_parent(&mut self) -> Option<Visit<'_, T>> {
         self.walk.to_parent()
     }
 
@@ -445,7 +444,7 @@ impl<'tree, T> TreeWalk<'tree, T> {
     /// walk.to_child( 1 );
     /// assert_eq!( walk.get(), Some( Visit::Begin( (tr(4)/tr(5)/tr(6)).root() )));
     /// ```
-    pub fn to_child(&mut self, n: usize) -> Option<Visit<T>> {
+    pub fn to_child(&mut self, n: usize) -> Option<Visit<'_, T>> {
         self.walk.to_child(n)
     }
 
@@ -463,7 +462,7 @@ impl<'tree, T> TreeWalk<'tree, T> {
     /// assert_eq!( walk.to_sib( 0 ), Some( Visit::Leaf( tr(1).root() )));
     /// assert_eq!( walk.to_sib( 2 ), Some( Visit::Leaf( tr(3).root() )));
     /// ```
-    pub fn to_sib(&mut self, n: usize) -> Option<Visit<T>> {
+    pub fn to_sib(&mut self, n: usize) -> Option<Visit<'_, T>> {
         self.walk.to_sib(n)
     }
 
@@ -560,7 +559,7 @@ impl<'forest, T> ForestWalk<'forest, T> {
     /// let walk = ForestWalk::new( &forest );
     /// assert_eq!( walk.get(), Some( Visit::Leaf( tr(1).root() )));
     /// ```
-    pub fn get(&self) -> Option<Visit<T>> {
+    pub fn get(&self) -> Option<Visit<'_, T>> {
         self.walk.get()
     }
 
@@ -614,7 +613,7 @@ impl<'forest, T> ForestWalk<'forest, T> {
     /// assert_eq!( walk.next(), None );
     /// assert_eq!( walk.next(), None );
     /// ```
-    pub fn next(&mut self) -> Option<Visit<T>> {
+    pub fn next(&mut self) -> Option<Visit<'_, T>> {
         self.walk.next()
     }
 
@@ -632,7 +631,7 @@ impl<'forest, T> ForestWalk<'forest, T> {
     /// assert_eq!( walk.get(), Some( Visit::Leaf ( tr(2).root() )));
     /// assert_eq!( walk.to_parent(), Some( Visit::End( (tr(1)/tr(2)/tr(3)).root() )));
     /// ```
-    pub fn to_parent(&mut self) -> Option<Visit<T>> {
+    pub fn to_parent(&mut self) -> Option<Visit<'_, T>> {
         self.walk.to_parent()
     }
 
@@ -668,7 +667,7 @@ impl<'forest, T> ForestWalk<'forest, T> {
     /// walk.to_child( 1 );
     /// assert_eq!( walk.get(), Some( Visit::Leaf ( tr(3).root() )));
     /// ```
-    pub fn to_child(&mut self, n: usize) -> Option<Visit<T>> {
+    pub fn to_child(&mut self, n: usize) -> Option<Visit<'_, T>> {
         self.walk.to_child(n)
     }
 
@@ -686,7 +685,7 @@ impl<'forest, T> ForestWalk<'forest, T> {
     /// assert_eq!( walk.to_sib( 0 ), Some( Visit::Leaf( tr(1).root() )));
     /// assert_eq!( walk.to_sib( 2 ), Some( Visit::Leaf( tr(3).root() )));
     /// ```
-    pub fn to_sib(&mut self, n: usize) -> Option<Visit<T>> {
+    pub fn to_sib(&mut self, n: usize) -> Option<Visit<'_, T>> {
         self.walk.to_sib(n)
     }
 

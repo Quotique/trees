@@ -63,8 +63,7 @@
 //! # Overview of features
 //!
 //! 1. Step-by-step [creating, reading, updating, deleting](./crud.md) and
-//!    iterating
-//! nodes with assocated data items.
+//!    iterating nodes with assocated data items.
 //!
 //! 2. Compact notations to express trees: `-`,`/` encoded or tuple encoded
 //!    trees.

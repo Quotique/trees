@@ -103,7 +103,7 @@ impl<T> NodeVec<T> {
         if height > 1 {
             offsets.push(1);
             for depth in 2..height {
-                let offset = offsets[(depth - 1)] + Tuple::descendants(depth - 2);
+                let offset = offsets[depth - 1] + Tuple::descendants(depth - 2);
                 offsets.push(offset);
             }
         }
