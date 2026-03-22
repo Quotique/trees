@@ -11,31 +11,33 @@ use super::{CountedRawIter, Node, RcNode};
 ///
 /// [`RcNode::iter_rc`]: ../rc/enum.RcNode.html#method.iter_rc
 pub struct IterRc<T> {
-    iter : CountedRawIter<T>,
-    mark : PhantomData<RcNode<T>>,
+    iter: CountedRawIter<T>,
+    mark: PhantomData<RcNode<T>>,
 }
 
 impl<T> Iterator for IterRc<T> {
     type Item = RcNode<T>;
 
-    fn next( &mut self ) -> Option<RcNode<T>> {
-        self.iter.next().map( |node| unsafe{ node.as_ref().rc() })
+    fn next(&mut self) -> Option<RcNode<T>> {
+        self.iter.next().map(|node| unsafe { node.as_ref().rc() })
     }
 
-    fn size_hint( &self ) -> ( usize, Option<usize> ) { self.iter.size_hint() }
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.iter.size_hint()
+    }
 }
 
 impl<T> IterRc<T> {
-    pub(crate) fn new( curr: Option<NonNull<Node<T>>>, len: usize ) -> Self {
+    pub(crate) fn new(curr: Option<NonNull<Node<T>>>, len: usize) -> Self {
         IterRc {
-            iter: CountedRawIter::new( curr, len ),
+            iter: CountedRawIter::new(curr, len),
             mark: PhantomData,
         }
     }
 }
 
 impl<T> Clone for IterRc<T> {
-    fn clone( &self ) -> Self {
+    fn clone(&self) -> Self {
         IterRc { ..*self }
     }
 }

@@ -6,28 +6,46 @@ use crate::rust::*;
 /// for resource management purpose.
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 pub struct Size {
-    pub degree      : usize, // count of child nodes
-    pub descendants : usize, // count of its descendant nodes
+    pub degree:      usize, // count of child nodes
+    pub descendants: usize, // count of its descendant nodes
 }
 
 impl Add for Size {
     type Output = Self;
-    fn add( self, rhs: Self ) -> Self { Size{ degree: self.degree+rhs.degree, descendants: self.descendants+rhs.descendants }}
+
+    fn add(self, rhs: Self) -> Self {
+        Size {
+            degree:      self.degree + rhs.degree,
+            descendants: self.descendants + rhs.descendants,
+        }
+    }
 }
 
 impl AddAssign for Size {
-    fn add_assign( &mut self, rhs: Self ) {
-        *self = Size{ degree: self.degree+rhs.degree, descendants: self.descendants+rhs.descendants }
+    fn add_assign(&mut self, rhs: Self) {
+        *self = Size {
+            degree:      self.degree + rhs.degree,
+            descendants: self.descendants + rhs.descendants,
+        }
     }
 }
 
 impl Sub for Size {
     type Output = Self;
-    fn sub( self, rhs: Self ) -> Self { Size{ degree: self.degree-rhs.degree, descendants: self.descendants-rhs.descendants }}
+
+    fn sub(self, rhs: Self) -> Self {
+        Size {
+            degree:      self.degree - rhs.degree,
+            descendants: self.descendants - rhs.descendants,
+        }
+    }
 }
 
 impl SubAssign for Size {
-    fn sub_assign( &mut self, rhs: Self ) {
-        *self = Size{ degree: self.degree-rhs.degree, descendants: self.descendants-rhs.descendants }
+    fn sub_assign(&mut self, rhs: Self) {
+        *self = Size {
+            degree:      self.degree - rhs.degree,
+            descendants: self.descendants - rhs.descendants,
+        }
     }
 }

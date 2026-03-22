@@ -5,43 +5,52 @@ use crate::Size;
 use crate::rust::*;
 
 /// Visit one node in tree/forest building process, using tuple notations.
-#[derive( Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash )]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Visit<T> {
-    Branch( T ),
-    Leaf(   T ),
+    Branch(T),
+    Leaf(T),
     Frame,
 }
 
 /// For tuple notations to construct `Tree`.
-pub trait TupleTree<T,Shape>: Sized {
+pub trait TupleTree<T, Shape>: Sized {
     const SIZE: Size;
-    fn descendants( indirect_level: usize ) -> usize;
+    fn descendants(indirect_level: usize) -> usize;
     fn height() -> usize;
-    fn preorder(  self, f: &mut impl FnMut( Visit<T> ));
-    fn preorder_with_size_hint( self, f: &mut impl FnMut( Visit<T>, Size ));
-    fn postorder( self, f: &mut impl FnMut( Visit<T> ));
-    fn postorder_with_size_hint(  self, f: &mut impl FnMut( Visit<T>, Size ));
+    fn preorder(self, f: &mut impl FnMut(Visit<T>));
+    fn preorder_with_size_hint(self, f: &mut impl FnMut(Visit<T>, Size));
+    fn postorder(self, f: &mut impl FnMut(Visit<T>));
+    fn postorder_with_size_hint(self, f: &mut impl FnMut(Visit<T>, Size));
 }
 
-impl<T> TupleTree<T,()> for T {
-    const SIZE: Size = Size{ degree: 0, descendants: 0 };
-    fn descendants( _indirect_level: usize ) -> usize { 0 }
-    fn height() -> usize { 1 }
+impl<T> TupleTree<T, ()> for T {
+    const SIZE: Size = Size {
+        degree:      0,
+        descendants: 0,
+    };
 
-    fn preorder( self, f: &mut impl FnMut( Visit<T> ) ) {
-        f( Visit::Leaf( self ));
+    fn descendants(_indirect_level: usize) -> usize {
+        0
     }
 
-    fn preorder_with_size_hint( self, f: &mut impl FnMut( Visit<T>, Size )) {
-        f( Visit::Leaf( self ), Size::default() );
+    fn height() -> usize {
+        1
     }
 
-    fn postorder( self, f: &mut impl FnMut( Visit<T> ) ) {
-        f( Visit::Leaf( self ));
+    fn preorder(self, f: &mut impl FnMut(Visit<T>)) {
+        f(Visit::Leaf(self));
     }
 
-    fn postorder_with_size_hint( self, f: &mut impl FnMut( Visit<T>, Size )) {
-        f( Visit::Leaf( self ), Size::default() );
+    fn preorder_with_size_hint(self, f: &mut impl FnMut(Visit<T>, Size)) {
+        f(Visit::Leaf(self), Size::default());
+    }
+
+    fn postorder(self, f: &mut impl FnMut(Visit<T>)) {
+        f(Visit::Leaf(self));
+    }
+
+    fn postorder_with_size_hint(self, f: &mut impl FnMut(Visit<T>, Size)) {
+        f(Visit::Leaf(self), Size::default());
     }
 }
 
@@ -113,14 +122,14 @@ macro_rules! impl_tuple_tree {
 }
 
 /// For tuple notations to construct `Forest`.
-pub trait TupleForest<T,Shape>: Sized {
+pub trait TupleForest<T, Shape>: Sized {
     const SIZE: Size;
-    fn descendants( indirect_level: usize ) -> usize;
+    fn descendants(indirect_level: usize) -> usize;
     fn height() -> usize;
-    fn preorder(  self, f: &mut impl FnMut( Visit<T> ));
-    fn preorder_with_size_hint(  self, f: &mut impl FnMut( Visit<T>, Size ));
-    fn postorder( self, f: &mut impl FnMut( Visit<T> ));
-    fn postorder_with_size_hint(  self, f: &mut impl FnMut( Visit<T>, Size ));
+    fn preorder(self, f: &mut impl FnMut(Visit<T>));
+    fn preorder_with_size_hint(self, f: &mut impl FnMut(Visit<T>, Size));
+    fn postorder(self, f: &mut impl FnMut(Visit<T>));
+    fn postorder_with_size_hint(self, f: &mut impl FnMut(Visit<T>, Size));
 }
 
 macro_rules! impl_tuple_forest {
@@ -248,78 +257,90 @@ tuple_forest_impls! {
    32 => (0 T0 S0 1 T1 S1 2 T2 S2 3 T3 S3 4 T4 S4 5 T5 S5 6 T6 S6 7 T7 S7 8 T8 S8 9 T9 S9 10 T10 S10 11 T11 S11 12 T12 S12 13 T13 S13 14 T14 S14 15 T15 S15 16 T16 S16 17 T17 S17 18 T18 S18 19 T19 S19 20 T20 S20 21 T21 S21 22 T22 S22 23 T23 S23 24 T24 S24 25 T25 S25 26 T26 S26 27 T27 S27 28 T28 S28 29 T29 S29 30 T30 S30 31 T31 S31)
 }
 
-#[cfg( test )]
+#[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn tree_preorder() {
         let mut visits = Vec::new();
-        let tree = (0, (1,3,4), (2,5,6), );
-        TupleTree::<i32,_>::preorder( tree, &mut |visit| visits.push( visit ));
-        assert_eq!( visits, vec![
-            Visit::Branch(0),
-            Visit::Branch(1),
-            Visit::Leaf(3),
-            Visit::Leaf(4),
-            Visit::Frame,
-            Visit::Branch(2),
-            Visit::Leaf(5),
-            Visit::Leaf(6),
-            Visit::Frame,
-            Visit::Frame,
-        ]);
+        let tree = (0, (1, 3, 4), (2, 5, 6));
+        TupleTree::<i32, _>::preorder(tree, &mut |visit| visits.push(visit));
+        assert_eq!(
+            visits,
+            vec![
+                Visit::Branch(0),
+                Visit::Branch(1),
+                Visit::Leaf(3),
+                Visit::Leaf(4),
+                Visit::Frame,
+                Visit::Branch(2),
+                Visit::Leaf(5),
+                Visit::Leaf(6),
+                Visit::Frame,
+                Visit::Frame,
+            ]
+        );
     }
 
     #[test]
     fn forest_preorder() {
         let mut visits = Vec::new();
-        let forest = ( (1,3,4), (2,5,6), );
-        TupleForest::<i32,_>::preorder( forest, &mut |visit| visits.push( visit ));
-        assert_eq!( visits, vec![
-            Visit::Branch(1),
-            Visit::Leaf(3),
-            Visit::Leaf(4),
-            Visit::Frame,
-            Visit::Branch(2),
-            Visit::Leaf(5),
-            Visit::Leaf(6),
-            Visit::Frame,
-        ]);
+        let forest = ((1, 3, 4), (2, 5, 6));
+        TupleForest::<i32, _>::preorder(forest, &mut |visit| visits.push(visit));
+        assert_eq!(
+            visits,
+            vec![
+                Visit::Branch(1),
+                Visit::Leaf(3),
+                Visit::Leaf(4),
+                Visit::Frame,
+                Visit::Branch(2),
+                Visit::Leaf(5),
+                Visit::Leaf(6),
+                Visit::Frame,
+            ]
+        );
     }
     #[test]
     fn tree_postorder() {
         let mut visits = Vec::new();
-        let tree = (0, (1,3,4), (2,5,6), );
-        TupleTree::<i32,_>::postorder( tree, &mut |visit| visits.push( visit ));
-        assert_eq!( visits, vec![
-            Visit::Frame,
-            Visit::Frame,
-            Visit::Leaf(3),
-            Visit::Leaf(4),
-            Visit::Branch(1),
-            Visit::Frame,
-            Visit::Leaf(5),
-            Visit::Leaf(6),
-            Visit::Branch(2),
-            Visit::Branch(0),
-        ]);
+        let tree = (0, (1, 3, 4), (2, 5, 6));
+        TupleTree::<i32, _>::postorder(tree, &mut |visit| visits.push(visit));
+        assert_eq!(
+            visits,
+            vec![
+                Visit::Frame,
+                Visit::Frame,
+                Visit::Leaf(3),
+                Visit::Leaf(4),
+                Visit::Branch(1),
+                Visit::Frame,
+                Visit::Leaf(5),
+                Visit::Leaf(6),
+                Visit::Branch(2),
+                Visit::Branch(0),
+            ]
+        );
     }
 
     #[test]
     fn forest_postorder() {
         let mut visits = Vec::new();
-        let forest = ( (1,3,4), (2,5,6), );
-        TupleForest::<i32,_>::postorder( forest, &mut |visit| visits.push( visit ));
-        assert_eq!( visits, vec![
-            Visit::Frame,
-            Visit::Leaf(3),
-            Visit::Leaf(4),
-            Visit::Branch(1),
-            Visit::Frame,
-            Visit::Leaf(5),
-            Visit::Leaf(6),
-            Visit::Branch(2),
-        ]);
+        let forest = ((1, 3, 4), (2, 5, 6));
+        TupleForest::<i32, _>::postorder(forest, &mut |visit| visits.push(visit));
+        assert_eq!(
+            visits,
+            vec![
+                Visit::Frame,
+                Visit::Leaf(3),
+                Visit::Leaf(4),
+                Visit::Branch(1),
+                Visit::Frame,
+                Visit::Leaf(5),
+                Visit::Leaf(6),
+                Visit::Branch(2),
+            ]
+        );
     }
 }
