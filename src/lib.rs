@@ -85,85 +85,61 @@
 #[doc(hidden)]
 pub mod rust {
     #[cfg(not(feature = "no_std"))]
-    pub use std::borrow::{Borrow, ToOwned};
-    #[cfg(not(feature = "no_std"))]
-    pub use std::boxed::Box;
-    #[cfg(not(feature = "no_std"))]
-    pub use std::cell::{Cell, Ref, RefCell, RefMut};
-    #[cfg(not(feature = "no_std"))]
-    pub use std::cmp::Ordering::{self, *};
-    #[cfg(not(feature = "no_std"))]
-    pub use std::collections::VecDeque;
-    #[cfg(not(feature = "no_std"))]
-    pub use std::fmt::{self, Debug, Display, Formatter};
-    #[cfg(not(feature = "no_std"))]
-    pub use std::hash::{Hash, Hasher};
-    #[cfg(not(feature = "no_std"))]
-    pub use std::iter::{FromIterator, FusedIterator, IntoIterator, Iterator};
-    #[cfg(not(feature = "no_std"))]
-    pub use std::marker::{PhantomData, Unpin};
-    #[cfg(not(feature = "no_std"))]
-    pub use std::mem::{self, forget, transmute, MaybeUninit};
-    #[cfg(not(feature = "no_std"))]
-    pub use std::ops::{Add, AddAssign, Deref, DerefMut, Div, Neg, Sub, SubAssign};
-    #[cfg(not(feature = "no_std"))]
-    pub use std::pin::Pin;
-    #[cfg(not(feature = "no_std"))]
-    pub use std::ptr::{self, null, null_mut, NonNull};
-    #[cfg(not(feature = "no_std"))]
-    pub use std::rc::{Rc, Weak};
-    #[cfg(not(feature = "no_std"))]
-    pub use std::vec::Vec;
+    pub use std::{
+        borrow::{Borrow, ToOwned},
+        boxed::Box,
+        cell::{Cell, Ref, RefCell, RefMut},
+        cmp::Ordering::{self, *},
+        collections::VecDeque,
+        fmt::{self, Debug, Display, Formatter},
+        hash::{Hash, Hasher},
+        iter::{FromIterator, FusedIterator, IntoIterator, Iterator},
+        marker::{PhantomData, Unpin},
+        mem::{self, forget, transmute, MaybeUninit},
+        ops::{Add, AddAssign, Deref, DerefMut, Div, Neg, Sub, SubAssign},
+        pin::Pin,
+        ptr::{self, null, null_mut, NonNull},
+        rc::{Rc, Weak},
+        vec::Vec,
+    };
 
     #[cfg(feature = "no_std")]
     extern crate alloc;
     #[cfg(feature = "no_std")]
     extern crate core;
+
     #[cfg(feature = "no_std")]
-    pub use self::alloc::borrow::{Borrow, ToOwned};
+    pub use self::alloc::{
+        borrow::{Borrow, ToOwned},
+        boxed::Box,
+        collections::VecDeque,
+        rc::{Rc, Weak},
+        string::String,
+        vec::Vec,
+    };
     #[cfg(feature = "no_std")]
-    pub use self::alloc::boxed::Box;
-    #[cfg(feature = "no_std")]
-    pub use self::alloc::collections::VecDeque;
+    pub use core::{
+        cell::{Cell, Ref, RefCell, RefMut},
+        cmp::Ordering::{self, *},
+        fmt::{self, Debug, Display, Formatter},
+        hash::{Hash, Hasher},
+        iter::{FromIterator, FusedIterator, IntoIterator, Iterator},
+        marker::{PhantomData, Unpin},
+        mem::{self, forget, transmute, MaybeUninit},
+        ops::{Add, AddAssign, Deref, DerefMut, Div, Neg, Sub, SubAssign},
+        pin::Pin,
+        ptr::{self, null, null_mut, NonNull},
+    };
+
     #[cfg(feature = "no_std")]
     #[cfg(test)]
-    pub use self::alloc::format;
-    #[cfg(feature = "no_std")]
-    pub use self::alloc::rc::{Rc, Weak};
-    #[cfg(feature = "no_std")]
-    pub use self::alloc::string::String;
-    #[cfg(feature = "no_std")]
-    #[cfg(test)]
-    pub use self::alloc::string::ToString;
-    #[cfg(feature = "no_std")]
-    #[cfg(test)]
-    pub use self::alloc::vec;
-    #[cfg(feature = "no_std")]
-    pub use self::alloc::vec::Vec;
-    #[cfg(feature = "no_std")]
-    pub use core::cell::{Cell, Ref, RefCell, RefMut};
-    #[cfg(feature = "no_std")]
-    pub use core::cmp::Ordering::{self, *};
-    #[cfg(feature = "no_std")]
-    pub use core::fmt::{self, Debug, Display, Formatter};
-    #[cfg(feature = "no_std")]
-    pub use core::hash::{Hash, Hasher};
-    #[cfg(feature = "no_std")]
-    pub use core::iter::{FromIterator, FusedIterator, IntoIterator, Iterator};
-    #[cfg(feature = "no_std")]
-    pub use core::marker::{PhantomData, Unpin};
-    #[cfg(feature = "no_std")]
-    pub use core::mem::{self, forget, transmute, MaybeUninit};
-    #[cfg(feature = "no_std")]
-    pub use core::ops::{Add, AddAssign, Deref, DerefMut, Div, Neg, Sub, SubAssign};
-    #[cfg(feature = "no_std")]
-    pub use core::pin::Pin;
-    #[cfg(feature = "no_std")]
-    pub use core::ptr::{self, null, null_mut, NonNull};
+    pub use self::alloc::{format, string::ToString, vec};
 }
 
 #[macro_use]
 mod macros;
+#[cfg(feature = "serde")]
+mod serde;
 
 pub mod tuple;
 pub use tuple::{TupleForest, TupleTree};
